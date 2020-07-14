@@ -25,7 +25,7 @@ import guru.sfg.beer.order.service.web.mappers.BeerOrderMapper;
 import guru.sfg.beer.order.service.web.model.BeerDto;
 import guru.sfg.beer.order.service.web.model.BeerOrderLineDto;
 
-//@Disabled // utility for manual testing
+@Disabled // utility for manual testing
 @SpringBootTest
 class BeerOrderMapperTest {
 //	@Autowired
