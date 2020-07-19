@@ -24,6 +24,9 @@ import lombok.Setter;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Type;
+
 import java.sql.Timestamp;
 import java.util.Set;
 import java.util.UUID;
@@ -47,8 +50,9 @@ public class Customer extends BaseEntity {
     }
 
     private String customerName;
-
-    @Column(length = 36, columnDefinition = "varchar")
+    
+    @Type(type="org.hibernate.type.UUIDCharType")
+    @Column(length = 36, columnDefinition = "varchar(36)")
     private UUID apiKey;
 
     @OneToMany(mappedBy = "customer")
