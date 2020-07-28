@@ -17,15 +17,10 @@
 
 package guru.sfg.beer.order.service.services;
 
-import guru.sfg.beer.order.service.domain.BeerOrder;
-import guru.sfg.beer.order.service.domain.Customer;
-import guru.sfg.beer.order.service.domain.OrderStatusEnum;
-import guru.sfg.beer.order.service.repositories.BeerOrderRepository;
-import guru.sfg.beer.order.service.repositories.CustomerRepository;
-import guru.sfg.beer.order.service.web.mappers.BeerOrderMapper;
-import guru.sfg.beer.order.service.web.model.BeerOrderDto;
-import guru.sfg.beer.order.service.web.model.BeerOrderPagedList;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,9 +28,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import guru.sfg.beer.order.service.domain.BeerOrder;
+import guru.sfg.beer.order.service.domain.BeerOrderStatusEnum;
+import guru.sfg.beer.order.service.domain.Customer;
+import guru.sfg.beer.order.service.repositories.BeerOrderRepository;
+import guru.sfg.beer.order.service.repositories.CustomerRepository;
+import guru.sfg.beer.order.service.web.mappers.BeerOrderMapper;
+import guru.sfg.beer.order.service.web.model.BeerOrderDto;
+import guru.sfg.beer.order.service.web.model.BeerOrderPagedList;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -84,7 +85,7 @@ public class BeerOrderServiceImpl implements BeerOrderService {
             BeerOrder beerOrder = beerOrderMapper.dtoToBeerOrder(beerOrderDto);
             beerOrder.setId(null); //should not be set by outside client
             beerOrder.setCustomer(customerOptional.get());
-            beerOrder.setOrderStatus(OrderStatusEnum.NEW);
+            beerOrder.setOrderStatus(BeerOrderStatusEnum.NEW);
 
             beerOrder.getBeerOrderLines().forEach(line -> line.setBeerOrder(beerOrder));
 
@@ -109,7 +110,7 @@ public class BeerOrderServiceImpl implements BeerOrderService {
     @Override
     public void pickupOrder(UUID customerId, UUID orderId) {
         BeerOrder beerOrder = getOrder(customerId, orderId);
-        beerOrder.setOrderStatus(OrderStatusEnum.PICKED_UP);
+        beerOrder.setOrderStatus(BeerOrderStatusEnum.PICKED_UP);
 
         beerOrderRepository.save(beerOrder);
     }
