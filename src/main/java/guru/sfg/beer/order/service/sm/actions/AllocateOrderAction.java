@@ -25,7 +25,6 @@ public class AllocateOrderAction implements Action<BeerOrderStatusEnum, BeerOrde
 
 	private final JmsTemplate jmsTemplate;
 	private final BeerOrderRepository beerOrderRepository;
-	private final AllocateOrderRequest allocateOrderRequest;
 	private final BeerOrderMapper beerOrderMapper;
 	
 	@Override
