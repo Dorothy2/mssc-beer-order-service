@@ -15,6 +15,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AllocateOrderRequest implements Serializable {
 	
-	private BeerOrderDto beerOrder;
+	private BeerOrderDto beerOrderDto;
 
 }

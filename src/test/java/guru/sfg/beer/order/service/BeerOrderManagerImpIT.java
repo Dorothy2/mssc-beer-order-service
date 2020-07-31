@@ -24,7 +24,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jenspiegsa.wiremockextension.WireMockExtension;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.common.ConsoleNotifier;
 
 import guru.sfg.beer.order.service.domain.BeerOrder;
 import guru.sfg.beer.order.service.domain.BeerOrderLine;
@@ -65,7 +64,7 @@ class BeerOrderManagerImpIT {
 		@Bean(destroyMethod = "stop")
 		public WireMockServer wireMockServer() {
 			WireMockServer server = with(wireMockConfig()
-					.port(8083)
+					.port(8083));
 					// for additional logging; default is turned off
 					// Provide an alternative notifier. The default logs to slf4j.
 					//.notifier(new ConsoleNotifier(true)));
@@ -97,7 +96,7 @@ class BeerOrderManagerImpIT {
 		await().untilAsserted(() -> {
 			BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
 			// todo - ALLOCATED STATUS
-			assertEquals(BeerOrderStatusEnum.ALLOCATION_PENDING, foundOrder.getOrderStatus());
+			assertEquals(BeerOrderStatusEnum.ALLOCATED, foundOrder.getOrderStatus());
 		});
 			
 		BeerOrder savedBeerOrder2 = beerOrderRepository.findById(savedBeerOrder.getId()).get();
