@@ -1,5 +1,6 @@
 package guru.sfg.beer.order.service.sm.actions;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.jms.core.JmsTemplate;
@@ -31,14 +32,24 @@ public class ValidateOrderAction implements Action<BeerOrderStatusEnum, BeerOrde
 	public void execute(StateContext<BeerOrderStatusEnum, BeerOrderEventEnum> context) {
 		
 		String beerOrderId = (String) context.getMessage().getHeaders().get(BeerOrderManagerImpl.ORDER_ID_HEADER);
-		BeerOrder beerOrder = beerOrderRepository.findOneById(UUID.fromString(beerOrderId));
-		
+		Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(UUID.fromString(beerOrderId));
+		beerOrderOptional.ifPresentOrElse(beerOrder -> {
+		System.out.println("Made it to here in ValidateOrderAction...");
+		ValidateOrderRequest testRequest = ValidateOrderRequest.builder()
+				.beerOrder(beerOrderMapper.beerOrderToDto(beerOrder))
+				.build();
+		if(testRequest == null) {
+			System.out.println("Issue with ValidationORderRequest builder...");
+		} else {
+			System.out.println("ValidationOrder Request: " + testRequest.toString());
+		}
+	
 		jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_QUEUE, ValidateOrderRequest.builder()
 				.beerOrder(beerOrderMapper.beerOrderToDto(beerOrder))
 			    .build());
 		
 		log.debug(String.format("Sent validation request to queue for order id %s", beerOrderId));
-		
+		}, () -> log.error("Order Not Found. Id: " + beerOrderId));
 	}
 
 

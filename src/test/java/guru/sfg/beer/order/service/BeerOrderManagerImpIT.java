@@ -4,8 +4,9 @@ import static com.github.jenspiegsa.wiremockextension.ManagedWireMockServer.with
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.jgroups.util.Util.assertNotNull;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jenspiegsa.wiremockextension.WireMockExtension;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.common.ConsoleNotifier;
 
 import guru.sfg.beer.order.service.domain.BeerOrder;
 import guru.sfg.beer.order.service.domain.BeerOrderLine;
@@ -62,7 +64,11 @@ class BeerOrderManagerImpIT {
 	
 		@Bean(destroyMethod = "stop")
 		public WireMockServer wireMockServer() {
-			WireMockServer server = with(wireMockConfig().port(8083));
+			WireMockServer server = with(wireMockConfig()
+					.port(8083)
+					// for additional logging; default is turned off
+					// Provide an alternative notifier. The default logs to slf4j.
+					//.notifier(new ConsoleNotifier(true)));
 			server.start();
 			return server;
 		}
@@ -76,7 +82,7 @@ class BeerOrderManagerImpIT {
 	}
 
 	@Test
-	void testNewToAllocated() throws JsonProcessingException {
+	void testNewToAllocated() throws InterruptedException, JsonProcessingException {
 		
 		BeerDto beerDto = BeerDto.builder().id(beerId).upc("12345").build();
 				
@@ -86,8 +92,17 @@ class BeerOrderManagerImpIT {
 		
 		BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
 		
-		assertNotNull(savedBeerOrder);
-		assertEquals(BeerOrderStatusEnum.ALLOCATED, savedBeerOrder.getOrderStatus());
+		
+		//Thread.sleep(5000);
+		await().untilAsserted(() -> {
+			BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
+			// todo - ALLOCATED STATUS
+			assertEquals(BeerOrderStatusEnum.ALLOCATION_PENDING, foundOrder.getOrderStatus());
+		});
+			
+		BeerOrder savedBeerOrder2 = beerOrderRepository.findById(savedBeerOrder.getId()).get();
+		assertNotNull(savedBeerOrder2);
+		assertEquals(BeerOrderStatusEnum.ALLOCATED, savedBeerOrder2.getOrderStatus());
 	}
 	
 	public BeerOrder createBeerOrder() {
