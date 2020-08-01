@@ -96,11 +96,8 @@ public class BeerOrderServiceImpl implements BeerOrderService {
 
     @Override
     public void pickupOrder(UUID customerId, UUID orderId) {
-    	// TODO: Replace with beerOrderManager code
-        BeerOrder beerOrder = getOrder(customerId, orderId);
-        beerOrder.setOrderStatus(BeerOrderStatusEnum.PICKED_UP);
-
-        beerOrderRepository.save(beerOrder);
+    	// Not sure why we need customerId param, but leaving it
+    	beerOrderManager.pickUpOrder(orderId);
     }
 
     private BeerOrder getOrder(UUID customerId, UUID orderId){

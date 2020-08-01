@@ -32,6 +32,7 @@ import guru.sfg.beer.order.service.domain.Customer;
 import guru.sfg.beer.order.service.repositories.BeerOrderRepository;
 import guru.sfg.beer.order.service.repositories.CustomerRepository;
 import guru.sfg.beer.order.service.services.BeerOrderManager;
+import guru.sfg.beer.order.service.services.BeerOrderService;
 import guru.sfg.beer.order.service.services.beer.BeerServiceImpl;
 import guru.sfg.brewery.model.BeerDto;
 
@@ -53,6 +54,9 @@ class BeerOrderManagerImpIT {
 	
 	@Autowired
 	WireMockServer wireMockServer;
+	
+	@Autowired
+	BeerOrderService beerOrderService;
 	
 	Customer testCustomer;
 	
@@ -105,6 +109,39 @@ class BeerOrderManagerImpIT {
 		BeerOrder savedBeerOrder2 = beerOrderRepository.findById(savedBeerOrder.getId()).get();
 		assertNotNull(savedBeerOrder2);
 		assertEquals(BeerOrderStatusEnum.ALLOCATED, savedBeerOrder2.getOrderStatus());
+	}
+	
+	@Test
+	void testNewToPickedUp() throws InterruptedException, JsonProcessingException {
+		
+		BeerDto beerDto = BeerDto.builder().id(beerId).upc("12345").build();
+				
+		wireMockServer.stubFor(get(BeerServiceImpl.BEER_UPC_PATH_V1 + "12345")
+			.willReturn(okJson(objectMapper.writeValueAsString(beerDto))));
+		BeerOrder beerOrder = createBeerOrder();
+		
+		BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
+		
+		await().untilAsserted(() -> {
+			BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
+			assertEquals(BeerOrderStatusEnum.ALLOCATED, foundOrder.getOrderStatus());
+		});
+		
+		await().untilAsserted(() -> {
+			BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
+			BeerOrderLine line = foundOrder.getBeerOrderLines().iterator().next();
+			assertEquals(line.getOrderQuantity(), line.getQuantityAllocated());
+		});
+		
+		beerOrderService.pickupOrder(testCustomer.getId(), beerOrder.getId());
+		await().untilAsserted(() -> {
+			BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
+			assertEquals(BeerOrderStatusEnum.PICKED_UP, foundOrder.getOrderStatus());
+		});
+			
+		BeerOrder savedBeerOrder2 = beerOrderRepository.findById(savedBeerOrder.getId()).get();
+		assertNotNull(savedBeerOrder2);
+		assertEquals(BeerOrderStatusEnum.PICKED_UP, savedBeerOrder2.getOrderStatus());
 	}
 	
 	public BeerOrder createBeerOrder() {
