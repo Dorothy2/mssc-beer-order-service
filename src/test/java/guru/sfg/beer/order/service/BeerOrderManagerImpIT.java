@@ -40,6 +40,8 @@ import guru.sfg.brewery.model.BeerDto;
 @SpringBootTest
 class BeerOrderManagerImpIT {
 	
+	private static final String BeerOrderValidationListener = null;
+
 	@Autowired
 	BeerOrderManager beerOrderManager;
 	
@@ -142,6 +144,25 @@ class BeerOrderManagerImpIT {
 		BeerOrder savedBeerOrder2 = beerOrderRepository.findById(savedBeerOrder.getId()).get();
 		assertNotNull(savedBeerOrder2);
 		assertEquals(BeerOrderStatusEnum.PICKED_UP, savedBeerOrder2.getOrderStatus());
+	}
+	
+	@Test
+	void testFailedValidation() throws JsonProcessingException {
+		BeerDto beerDto = BeerDto.builder().id(beerId).upc("12345").build();
+		
+		wireMockServer.stubFor(get(BeerServiceImpl.BEER_UPC_PATH_V1 + "12345")
+				.willReturn(okJson(objectMapper.writeValueAsString(beerDto))));
+		BeerOrder beerOrder = createBeerOrder();
+		beerOrder.setCustomerRef(guru.sfg.beer.order.service.testcomponents.BeerOrderValidationListener.FAIL_VALIDATION);
+		BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
+		
+		await().untilAsserted(() -> {
+			BeerOrder faultyOrder = beerOrderRepository.findById(savedBeerOrder.getId()).get();
+			assertEquals(BeerOrderStatusEnum.VALIDATION_EXCEPTION, faultyOrder.getOrderStatus());
+		});
+		
+		BeerOrder savedBeerOrder2 = beerOrderRepository.findById(beerOrder.getId()).get();
+		assertEquals(BeerOrderStatusEnum.VALIDATION_EXCEPTION, savedBeerOrder2.getOrderStatus() );
 	}
 	
 	public BeerOrder createBeerOrder() {

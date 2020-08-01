@@ -17,15 +17,21 @@ import lombok.extern.slf4j.Slf4j;
 public class BeerOrderValidationListener {
 	
 	private final JmsTemplate jmsTemplate;
+	
+	public static final String FAIL_VALIDATION = "fail-validation";
 
 	@JmsListener(destination = JmsConfig.VALIDATE_ORDER_QUEUE)
 	public void listen(Message msg) {
+		boolean isValid = true;
 		
 		ValidateOrderRequest request = (ValidateOrderRequest) msg.getPayload();
 		
+		if(request.getBeerOrder().getCustomerRef() != null && request.getBeerOrder().getCustomerRef().equals(FAIL_VALIDATION)) {
+			isValid = false;
+		}
 		jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_RESULT_QUEUE,
 				ValidateOrderResult.builder()
-				.isValid(true)
+				.isValid(isValid)
 				.orderId(request.getBeerOrder().getId())
 				.build());
 		
