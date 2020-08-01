@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,26 +35,19 @@ import guru.sfg.beer.order.service.repositories.CustomerRepository;
 import guru.sfg.beer.order.service.web.mappers.BeerOrderMapper;
 import guru.sfg.brewery.model.BeerOrderDto;
 import guru.sfg.brewery.model.BeerOrderPagedList;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 @Service
 public class BeerOrderServiceImpl implements BeerOrderService {
 
     private final BeerOrderRepository beerOrderRepository;
     private final CustomerRepository customerRepository;
     private final BeerOrderMapper beerOrderMapper;
-    private final ApplicationEventPublisher publisher;
-
-    public BeerOrderServiceImpl(BeerOrderRepository beerOrderRepository,
-                                CustomerRepository customerRepository,
-                                BeerOrderMapper beerOrderMapper, ApplicationEventPublisher publisher) {
-        this.beerOrderRepository = beerOrderRepository;
-        this.customerRepository = customerRepository;
-        this.beerOrderMapper = beerOrderMapper;
-        this.publisher = publisher;
-    }
-
+    private final BeerOrderManager beerOrderManager;
+ 
     @Override
     public BeerOrderPagedList listOrders(UUID customerId, Pageable pageable) {
         Optional<Customer> customerOptional = customerRepository.findById(customerId);
@@ -89,13 +81,8 @@ public class BeerOrderServiceImpl implements BeerOrderService {
 
             beerOrder.getBeerOrderLines().forEach(line -> line.setBeerOrder(beerOrder));
 
-            BeerOrder savedBeerOrder = beerOrderRepository.saveAndFlush(beerOrder);
-
-            log.debug("Saved Beer Order: " + beerOrder.getId());
-
-            //todo impl
-          //  publisher.publishEvent(new NewBeerOrderEvent(savedBeerOrder));
-
+            BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
+            log.debug("Saved Beer Order: " + savedBeerOrder.getId());
             return beerOrderMapper.beerOrderToDto(savedBeerOrder);
         }
         //todo add exception type
@@ -109,6 +96,7 @@ public class BeerOrderServiceImpl implements BeerOrderService {
 
     @Override
     public void pickupOrder(UUID customerId, UUID orderId) {
+    	// TODO: Replace with beerOrderManager code
         BeerOrder beerOrder = getOrder(customerId, orderId);
         beerOrder.setOrderStatus(BeerOrderStatusEnum.PICKED_UP);
 
