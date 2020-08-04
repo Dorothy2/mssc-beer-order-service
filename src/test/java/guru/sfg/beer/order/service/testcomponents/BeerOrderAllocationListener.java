@@ -20,6 +20,7 @@ public class BeerOrderAllocationListener {
 	
 	public static final String FAIL_ALLOCATION = "fail-allocation";
 	public static final String PARTIAL_ALLOCATION = "partial-allocation";
+	public static final String DO_NOT_ALLOCATE = "do not allocate";
 
 	@JmsListener(destination = JmsConfig.ALLOCATE_ORDER_QUEUE)
 	public void listen(Message msg) {
@@ -29,29 +30,53 @@ public class BeerOrderAllocationListener {
 		boolean allocationError = false;
 		boolean sendResponse = true;
 		
-		if(request.getBeerOrderDto().getCustomerRef() != null) {
-			if(request.getBeerOrderDto().getCustomerRef().equals(FAIL_ALLOCATION)) {
-				allocationError = true;
-			} else if(request.getBeerOrderDto().getCustomerRef().equals(PARTIAL_ALLOCATION)) {
-				pendingInventory = true;
-			}
-		}
+		System.out.println("Order Id at beginning: " + request.getBeerOrderDto().getId());
 
-		// trick to keep compiler happy
-		final boolean finalPendingInventory = pendingInventory;
-		if (!allocationError) {
-			request.getBeerOrderDto().getBeerOrderLines().forEach(beerOrderLineDto -> {
-				if(finalPendingInventory) {
-					beerOrderLineDto.setQuantityAllocated(beerOrderLineDto.getOrderQuantity() - 1);
-				} else {
-					beerOrderLineDto.setQuantityAllocated(beerOrderLineDto.getOrderQuantity());
+		if (request.getBeerOrderDto().getCustomerRef() != null
+				&& (request.getBeerOrderDto().getCustomerRef().equals(DO_NOT_ALLOCATE))) {
+			sendResponse = false;
+
+		} else {
+
+			if (request.getBeerOrderDto().getCustomerRef() != null) {
+				if (request.getBeerOrderDto().getCustomerRef().equals(FAIL_ALLOCATION)) {
+					allocationError = true;
+				} else if (request.getBeerOrderDto().getCustomerRef().equals(PARTIAL_ALLOCATION)) {
+					pendingInventory = true;
 				}
-			});
+			}
+
+			// trick to keep compiler happy
+			final boolean finalPendingInventory = pendingInventory;
+			//if (!allocationError) {
+				request.getBeerOrderDto().getBeerOrderLines().forEach(beerOrderLineDto -> {
+					if (finalPendingInventory) {
+						beerOrderLineDto.setQuantityAllocated(beerOrderLineDto.getOrderQuantity() - 1);
+					} else {
+						beerOrderLineDto.setQuantityAllocated(beerOrderLineDto.getOrderQuantity());
+					}
+				});
+			//}
+
+//		jmsTemplate.convertAndSend(JmsConfig.ALLOCATE_ORDER_RESPONSE_QUEUE,
+//				AllocateOrderResult.builder().pendingInventory(pendingInventory).allocationError(allocationError)
+//						.beerOrderDto(request.getBeerOrderDto()).build());
+
 		}
-
-		jmsTemplate.convertAndSend(JmsConfig.ALLOCATE_ORDER_RESPONSE_QUEUE,
-				AllocateOrderResult.builder().pendingInventory(pendingInventory).allocationError(allocationError)
-						.beerOrderDto(request.getBeerOrderDto()).build());
-
+		
+		if (sendResponse) {
+            jmsTemplate.convertAndSend(JmsConfig.ALLOCATE_ORDER_RESPONSE_QUEUE,
+                    AllocateOrderResult.builder()
+                            .beerOrderDto(request.getBeerOrderDto())
+                            .pendingInventory(pendingInventory)
+                            .allocationError(allocationError)
+                            .build());
+        }
+		AllocateOrderResult testResult =  AllocateOrderResult.builder()
+                .beerOrderDto(request.getBeerOrderDto())
+                .pendingInventory(pendingInventory)
+                .allocationError(allocationError)
+                .build();
+		System.out.println("Order Id at end: " + testResult.getBeerOrderDto().getId());
 	}
 }

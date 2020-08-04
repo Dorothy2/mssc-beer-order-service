@@ -99,6 +99,11 @@ public class BeerOrderServiceImpl implements BeerOrderService {
     	// Not sure why we need customerId param, but leaving it
     	beerOrderManager.pickUpOrder(orderId);
     }
+    
+    @Override
+    public void cancelOrder(UUID orderId) {
+    	beerOrderManager.cancelOrder(orderId);
+    }
 
     private BeerOrder getOrder(UUID customerId, UUID orderId){
         Optional<Customer> customerOptional = customerRepository.findById(customerId);
