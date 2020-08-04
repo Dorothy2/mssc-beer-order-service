@@ -38,6 +38,7 @@ import guru.sfg.beer.order.service.services.BeerOrderService;
 import guru.sfg.beer.order.service.services.beer.BeerServiceImpl;
 import guru.sfg.brewery.model.BeerDto;
 import guru.sfg.brewery.model.events.AllocationFailureEvent;
+import guru.sfg.brewery.model.events.DeallocateOrderRequest;
 
 @ExtendWith(WireMockExtension.class)
 @SpringBootTest
@@ -249,15 +250,16 @@ class BeerOrderManagerImpIT {
 			assertEquals(BeerOrderStatusEnum.ALLOCATED, foundOrder.getOrderStatus());
 		});
 			
-		BeerOrder savedBeerOrder2 = beerOrderRepository.findById(savedBeerOrder.getId()).get();
-		beerOrderService.cancelOrder(savedBeerOrder2.getId());
+		beerOrderService.cancelOrder(savedBeerOrder.getId());
 		await().untilAsserted(() -> {
 			BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
 			assertEquals(BeerOrderStatusEnum.CANCELLED, foundOrder.getOrderStatus());
 		});
 		
-		BeerOrder savedBeerOrder3 = beerOrderRepository.findById(savedBeerOrder2.getId()).get();
-		assertEquals(BeerOrderStatusEnum.CANCELLED, savedBeerOrder3.getOrderStatus() );
+		DeallocateOrderRequest deallocateOrderRequest = (DeallocateOrderRequest) jmsTemplate.receiveAndConvert(JmsConfig.DEALLOCATE_ORDER_QUEUE);
+		assertNotNull(deallocateOrderRequest);
+		assertEquals(deallocateOrderRequest.getBeerOrderDto().getId().toString(), savedBeerOrder.getId().toString());
+	
 	}
 	
 	@Test

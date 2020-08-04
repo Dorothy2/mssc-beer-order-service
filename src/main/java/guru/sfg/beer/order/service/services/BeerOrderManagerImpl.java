@@ -3,6 +3,8 @@ package guru.sfg.beer.order.service.services;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.persistence.EntityManager;
+
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
@@ -29,6 +31,7 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
 	private final StateMachineFactory<BeerOrderStatusEnum, BeerOrderEventEnum> stateMachineFactory;
 	private final BeerOrderRepository beerOrderRepository;
 	private final BeerOrderStateChangeInterceptor beerOrderStatusChangeInterceptor;
+	private final EntityManager entityManager;
 
 	@Transactional
 	@Override
@@ -44,6 +47,8 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
 	@Transactional
 	@Override
 	public void processValidationResult(UUID beerOrderId, Boolean isValid) {
+		log.debug("Process validation result for beerOrderId: " + beerOrderId + " Valid? " + isValid);
+		entityManager.flush();
 		// BeerOrder beerOrder = beerOrderRepository.getOne(beerOrderId);
 		Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(beerOrderId);
 
