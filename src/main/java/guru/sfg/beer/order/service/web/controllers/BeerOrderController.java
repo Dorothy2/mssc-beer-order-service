@@ -17,15 +17,23 @@
 
 package guru.sfg.beer.order.service.web.controllers;
 
-import guru.sfg.beer.order.service.services.BeerOrderService;
-import guru.sfg.brewery.model.BeerOrderDto;
-import guru.sfg.brewery.model.BeerOrderPagedList;
+import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
+import guru.sfg.beer.order.service.services.BeerOrderService;
+import guru.sfg.brewery.model.BeerOrderDto;
+import guru.sfg.brewery.model.BeerOrderPagedList;
 
 @RequestMapping("/api/v1/customers/{customerId}/")
 @RestController
@@ -41,7 +49,7 @@ public class BeerOrderController {
     }
 
     @GetMapping("orders")
-    public BeerOrderPagedList listOrders(@PathVariable("customerId") UUID customerId,
+    public BeerOrderPagedList listOrders(@PathVariable("customerId") String strCustomerId,
                                          @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
                                          @RequestParam(value = "pageSize", required = false) Integer pageSize){
 
@@ -52,6 +60,13 @@ public class BeerOrderController {
         if (pageSize == null || pageSize < 1) {
             pageSize = DEFAULT_PAGE_SIZE;
         }
+        
+        if(strCustomerId.equals("ALL")) {
+        	return beerOrderService.listOrders(PageRequest.of(pageNumber, pageSize));
+        } 
+        
+        UUID customerId = UUID.fromString(strCustomerId);
+       
 
         return beerOrderService.listOrders(customerId, PageRequest.of(pageNumber, pageSize));
     }

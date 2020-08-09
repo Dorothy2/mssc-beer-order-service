@@ -45,6 +45,7 @@ public class BeerOrderStateChangeInterceptor extends StateMachineInterceptorAdap
 	    	// update payment status
 	    	// by default, Hibernate does a lazy write, saveAndFlush forces it to go to db right away
 	    	beerOrderRepository.saveAndFlush(beerOrder);
+	    	System.out.println("State after: " + beerOrder.getOrderStatus());
 	    });
 		
 		

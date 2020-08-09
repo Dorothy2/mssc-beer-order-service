@@ -34,7 +34,7 @@ public class ValidateOrderAction implements Action<BeerOrderStatusEnum, BeerOrde
 		String beerOrderId = (String) context.getMessage().getHeaders().get(BeerOrderManagerImpl.ORDER_ID_HEADER);
 		Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(UUID.fromString(beerOrderId));
 		beerOrderOptional.ifPresentOrElse(beerOrder -> {
-		System.out.println("Made it to here in ValidateOrderAction...");
+		
 		ValidateOrderRequest testRequest = ValidateOrderRequest.builder()
 				.beerOrder(beerOrderMapper.beerOrderToDto(beerOrder))
 				.build();

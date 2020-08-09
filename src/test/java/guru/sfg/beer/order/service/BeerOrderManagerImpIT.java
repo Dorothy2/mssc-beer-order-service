@@ -40,6 +40,15 @@ import guru.sfg.brewery.model.BeerDto;
 import guru.sfg.brewery.model.events.AllocationFailureEvent;
 import guru.sfg.brewery.model.events.DeallocateOrderRequest;
 
+/***
+ * BeerOrderManagerImplIT - tests for state machine
+ * 
+ * @author drifai
+ * 
+ * Note: the testAllocationiFailed and testAllocatedToCancelled tests only run
+ * successfully when they are called by themselves.
+ *
+ */
 @ExtendWith(WireMockExtension.class)
 @SpringBootTest
 class BeerOrderManagerImpIT {

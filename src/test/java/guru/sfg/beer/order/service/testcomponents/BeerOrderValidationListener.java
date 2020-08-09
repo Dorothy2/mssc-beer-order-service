@@ -36,7 +36,7 @@ public class BeerOrderValidationListener {
 					&& request.getBeerOrder().getCustomerRef().equals(FAIL_VALIDATION)) {
 				isValid = false;
 			}
-			jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_RESULT_QUEUE,
+			jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_RESPONSE_QUEUE,
 					ValidateOrderResult.builder().isValid(isValid).orderId(request.getBeerOrder().getId()).build());
 		}
 	}

@@ -9,12 +9,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import guru.sfg.brewery.model.BeerDto;
+import lombok.extern.slf4j.Slf4j;
 
 	/**
 	 * Created by jt on 2019-06-09.
 	 */
 	@ConfigurationProperties(prefix = "sfg.brewery", ignoreUnknownFields = false)
 	@Service
+	@Slf4j
 	public class BeerServiceImpl implements BeerService {
 	    public final static String BEER_PATH_V1 = "/api/v1/beer/";
 	    public final static String BEER_UPC_PATH_V1 = "/api/v1/beer/upc/";
@@ -32,9 +34,9 @@ import guru.sfg.brewery.model.BeerDto;
 	    }
 
 	    @Override
-	    public Optional<BeerDto> getBeerByUPC(String upc) {
-	        return Optional.of(restTemplate.getForObject(beerServiceHost + BEER_UPC_PATH_V1 + upc, BeerDto.class));
-	    }
+	    public Optional<BeerDto> getBeerByUPC(String upc) {	    
+	    		return Optional.of(restTemplate.getForObject(beerServiceHost + BEER_UPC_PATH_V1 + upc, BeerDto.class));
+		}
 
 	    public void setBeerServiceHost(String beerServiceHost) {
 	        this.beerServiceHost = beerServiceHost;

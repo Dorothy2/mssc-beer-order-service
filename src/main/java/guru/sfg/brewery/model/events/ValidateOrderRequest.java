@@ -17,4 +17,9 @@ public class ValidateOrderRequest implements Serializable {
 	
 	private BeerOrderDto beerOrder;
 
+	@Override
+	public String toString() {
+		return "ValidateOrderRequest [beerOrder=" + beerOrder + "]";
+	}
+
 }
