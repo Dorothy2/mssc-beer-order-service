@@ -175,7 +175,7 @@ class BeerOrderManagerImpIT {
 		assertNotNull(savedBeerOrder2);
 		assertEquals(BeerOrderStatusEnum.VALIDATION_PENDING, savedBeerOrder2.getOrderStatus());
 		
-		beerOrderService.cancelOrder(beerOrder.getId());
+		beerOrderManager.cancelOrder(beerOrder.getId());
 		await().untilAsserted(() -> {
 			BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
 			assertEquals(BeerOrderStatusEnum.CANCELLED, foundOrder.getOrderStatus());
@@ -189,7 +189,7 @@ class BeerOrderManagerImpIT {
 		wireMockServer.stubFor(get(BeerServiceImpl.BEER_UPC_PATH_V1 + "12345")
 				.willReturn(okJson(objectMapper.writeValueAsString(beerDto))));
 		BeerOrder beerOrder = createBeerOrder();
-		beerOrder.setCustomerRef(guru.sfg.beer.order.service.testcomponents.BeerOrderAllocationListener.FAIL_ALLOCATION);
+		beerOrder.setCustomerRef("-fail-validation");
 		BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
 		
 		await().untilAsserted(() -> {
@@ -208,7 +208,7 @@ class BeerOrderManagerImpIT {
 		wireMockServer.stubFor(get(BeerServiceImpl.BEER_UPC_PATH_V1 + "12345")
 				.willReturn(okJson(objectMapper.writeValueAsString(beerDto))));
 		BeerOrder beerOrder = createBeerOrder();
-		beerOrder.setCustomerRef(guru.sfg.beer.order.service.testcomponents.BeerOrderAllocationListener.PARTIAL_ALLOCATION);
+		beerOrder.setCustomerRef("partial-allocation");
 		BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
 		
 		await().untilAsserted(() -> {
@@ -226,7 +226,7 @@ class BeerOrderManagerImpIT {
 		wireMockServer.stubFor(get(BeerServiceImpl.BEER_UPC_PATH_V1 + "12345")
 				.willReturn(okJson(objectMapper.writeValueAsString(beerDto))));
 		BeerOrder beerOrder = createBeerOrder();
-		beerOrder.setCustomerRef(guru.sfg.beer.order.service.testcomponents.BeerOrderAllocationListener.DO_NOT_ALLOCATE);
+		beerOrder.setCustomerRef("do not allocate");
 		BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
 		
 		await().untilAsserted(() -> {
@@ -234,7 +234,7 @@ class BeerOrderManagerImpIT {
 			assertEquals(BeerOrderStatusEnum.ALLOCATION_PENDING, savedBeerOrder2.getOrderStatus());
 		});
 		
-		beerOrderService.cancelOrder(savedBeerOrder.getId());
+		beerOrderManager.cancelOrder(savedBeerOrder.getId());
 		await().untilAsserted(() -> {
 			BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
 			assertEquals(BeerOrderStatusEnum.CANCELLED, foundOrder.getOrderStatus());
@@ -259,7 +259,7 @@ class BeerOrderManagerImpIT {
 			assertEquals(BeerOrderStatusEnum.ALLOCATED, foundOrder.getOrderStatus());
 		});
 			
-		beerOrderService.cancelOrder(savedBeerOrder.getId());
+		beerOrderManager.cancelOrder(savedBeerOrder.getId());
 		await().untilAsserted(() -> {
 			BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
 			assertEquals(BeerOrderStatusEnum.CANCELLED, foundOrder.getOrderStatus());
@@ -278,7 +278,7 @@ class BeerOrderManagerImpIT {
 		wireMockServer.stubFor(get(BeerServiceImpl.BEER_UPC_PATH_V1 + "12345")
 				.willReturn(okJson(objectMapper.writeValueAsString(beerDto))));
 		BeerOrder beerOrder = createBeerOrder();
-		beerOrder.setCustomerRef(guru.sfg.beer.order.service.testcomponents.BeerOrderAllocationListener.FAIL_ALLOCATION);
+		beerOrder.setCustomerRef("fail-allocation");
 		BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
 		System.out.println("Beer order id: " + savedBeerOrder.getId() + " status: " + savedBeerOrder.getCustomerRef());
 		

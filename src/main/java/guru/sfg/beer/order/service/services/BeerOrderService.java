@@ -34,7 +34,5 @@ public interface BeerOrderService {
 
     void pickupOrder(UUID customerId, UUID orderId);
 
-	void cancelOrder(UUID orderId);
-
 	BeerOrderPagedList listOrders(Pageable pageable);
 }
