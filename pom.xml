@@ -71,7 +71,13 @@
        		<groupId>org.awaitility</groupId>
        		<artifactId>awaitility</artifactId>
        		<scope>test</scope>
-       	</dependency>           
+       	</dependency>  
+        <dependency>
+        	<groupId>net.logstash.logback</groupId>
+        	<artifactId>logstash-logback-encoder</artifactId>
+        	<version>6.5</version>
+        </dependency>
+       	         
     </dependencies>
     
     <repositories>
